@@ -56,6 +56,11 @@
   [state contender]
   (update state contender #(mapv (fn [card] (assoc card :face-down? false)) %)))
 
+(defn add-win [state] (update-in state [:score :wins] inc))
+
+(defn add-loss [state] (update-in state [:score :losses] inc))
+
+
 (comment
   initial-state
   (count-cards initial-state :player 11)
@@ -66,7 +71,5 @@
       (face-up-cards :player)
       #_(blackjack? :player)
       #_(count-cards :player 11))
-  (blackjack? initial-state :dealer)
-
-  ,)
+  (blackjack? initial-state :dealer),)
 
