@@ -44,6 +44,13 @@
                  (:number %)))
          (reduce +))))
 
+(defn blackjack?
+  "Check if the contender has a blackjack, try for both Ace values: 1 & 11"
+  [state contender]
+  (let [counter (partial count-cards state contender)]
+    (or (= 21 (counter 11))
+        (= 21 (counter 1)))))
+
 (comment
   initial-state
   (count-cards initial-state :player 11)
@@ -51,5 +58,9 @@
   (-> initial-state
       (deal :player true)
       (deal :player)
-      #_(count-cards :player 11)))
+      #_(blackjack? :player)
+      (count-cards :player 11))
+  (blackjack? initial-state :player)
+
+  ,)
 
