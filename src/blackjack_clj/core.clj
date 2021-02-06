@@ -7,7 +7,9 @@
    (reduce conj clojure.lang.PersistentQueue/EMPTY coll)))
 
 ;; Define the data model
-(def initial-state
+(defn initial-state
+  "Get a fresh initial state"
+  []
   {:score  {:wins 0 :losses 0}
    :cards  (-> (for [type [:hearts :clubs :diamonds :spades]
                      number [\A 2 3 4 5 6 7 8 9 \J \Q \K]
@@ -72,6 +74,6 @@
   [state]
   (update state :turn #(case % :player :dealer :dealer :player)))
 
-(comment
-  )
+(comment)
+
 
