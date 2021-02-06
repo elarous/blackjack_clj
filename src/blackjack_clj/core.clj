@@ -67,19 +67,11 @@
 
 (defn add-loss [state] (update-in state [:score :losses] inc))
 
+(defn stand
+  "Give the turn to the other contender"
+  [state]
+  (update state :turn #(case % :player :dealer :dealer :player)))
 
 (comment
-  initial-state
-  (count-cards initial-state :player 11)
-
-  (-> initial-state
-      (deal :player true)
-      (deal :player true)
-      (deal :player true)
-      (face-up-cards :player)
-      #_(bust? :player)
-      #_(blackjack? :player)
-      #_(count-cards :player 11))
-  (bust? initial-state :dealer)
-  (blackjack? initial-state :dealer))
+  )
 
