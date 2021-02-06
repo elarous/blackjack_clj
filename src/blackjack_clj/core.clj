@@ -34,6 +34,8 @@
                            (update contender conj card)))]
      (deal-helper state contender))))
 
+(def hit deal) ;; alias
+
 (defn count-cards
   "Count the cards' values in the hand of a contender
    `ace-as` should be either `11` or `1`"
@@ -105,13 +107,38 @@
       (-> new-state
           (turn :player)))))
 
+(defn soft-17? [state contender]
+  (let [cards (get state contender)]
+    (= (set (map :number cards)) #{\A \6})))
+
+(defn post-check
+  "
+  Check to run after the player takes an action.
+  Start a new round if player ahs gone busted
+  "
+  [state]
+  (if (bust? state :player)
+    (-> state add-loss new-round)
+    state))
+
+(defn dealer-check
+  [state]
+  (let [counter (partial count-cards state :dealer)
+        cnt-dealer (counter :dealer)
+        cnt-player (counter :player)]
+    (cond
+      (= cnt-dealer cnt-player) (-> state new-round) ;; a draw, start a new round
+      (bust? state :dealer) (-> state add-win new-round) ;; dealer's bust, add a new win to player, and start new round
+      ;; cards' value of the dealer is less than 17, or he has a soft 17 then he must `hit`
+      ;; make a recursive call to this same function to run the checks again
+      (or (< cnt-dealer 17) (soft-17? state :dealer)) (-> state (hit :dealer) dealer-check)
+      ;; compare the dealer's and player's card values
+      (>= cnt-dealer 17) (cond
+                           (> cnt-player cnt-dealer) (-> state add-win new-round)
+                           (< cnt-player cnt-dealer) (-> state add-loss new-round)))))
+
+
 (comment
-  (-> (initial-state)
-      add-win
-      add-loss
-      add-win
-      new-round
-      new-round))
 
-
+  (soft-17? (merge (initial-state) {:dealer [{:number \A} {:number \6}]}) :dealer))
 
