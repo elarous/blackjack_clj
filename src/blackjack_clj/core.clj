@@ -35,9 +35,27 @@
        :dealer (deal-helper state :dealer-hand)
        (throw (Error. (str "Only the dealer or player can be a contender. (got: " contender ")")))))))
 
+(defn count-cards
+  "Count the cards' values in the hand of a contender
+   `ace-as` should be either `11` or `1`"
+  [state contender ace-as]
+  (let [cards (case contender
+                :player (get state :player-hand)
+                :dealer (get state :dealer-hand))]
+    (->> cards
+         (map #(case (:number %)
+                 (\J \Q \K) 10
+                 \A (if (= ace-as 11) 11 1)
+                 (:number %)))
+         (reduce +))))
+
+
 (comment
   initial-state
+  (count-cards initial-state :player 11)
+
   (-> initial-state
       (deal :player true)
-      (deal :player)))
+      (deal :player)
+      (count-cards :player 11)))
 
