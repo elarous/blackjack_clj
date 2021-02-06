@@ -51,16 +51,22 @@
     (or (= 21 (counter 11))
         (= 21 (counter 1)))))
 
+(defn face-up-cards
+  "Flip all contender's cards to be face-up"
+  [state contender]
+  (update state contender #(mapv (fn [card] (assoc card :face-down? false)) %)))
+
 (comment
   initial-state
   (count-cards initial-state :player 11)
 
   (-> initial-state
       (deal :player true)
-      (deal :player)
+      (deal :player true)
+      (face-up-cards :player)
       #_(blackjack? :player)
-      (count-cards :player 11))
-  (blackjack? initial-state :player)
+      #_(count-cards :player 11))
+  (blackjack? initial-state :dealer)
 
   ,)
 
