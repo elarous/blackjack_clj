@@ -51,6 +51,13 @@
     (or (= 21 (counter 11))
         (= 21 (counter 1)))))
 
+(defn bust?
+  "Check if the contender went bust (Cards' values exceed 21)"
+  [state contender]
+  (let [counter (partial count-cards state contender)]
+    (and (> (counter 11) 21)
+         (> (counter 1) 21))))
+
 (defn face-up-cards
   "Flip all contender's cards to be face-up"
   [state contender]
@@ -68,8 +75,11 @@
   (-> initial-state
       (deal :player true)
       (deal :player true)
+      (deal :player true)
       (face-up-cards :player)
+      #_(bust? :player)
       #_(blackjack? :player)
       #_(count-cards :player 11))
-  (blackjack? initial-state :dealer),)
+  (bust? initial-state :dealer)
+  (blackjack? initial-state :dealer))
 
