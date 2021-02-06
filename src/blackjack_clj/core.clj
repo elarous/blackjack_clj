@@ -10,7 +10,8 @@
 (defn initial-state
   "Get a fresh initial state"
   []
-  {:score  {:wins 0 :losses 0}
+  {:wins   0
+   :losses 0
    :cards  (-> (for [type [:hearts :clubs :diamonds :spades]
                      number [\A 2 3 4 5 6 7 8 9 \J \Q \K]
                      face-down? [false]]
@@ -34,7 +35,7 @@
                            (update contender conj card)))]
      (deal-helper state contender))))
 
-(def hit deal) ;; alias
+(def hit deal)                                              ;; alias
 
 (defn count-cards
   "Count the cards' values in the hand of a contender
@@ -67,9 +68,9 @@
   [state contender]
   (update state contender #(mapv (fn [card] (assoc card :face-down? false)) %)))
 
-(defn add-win [state] (update-in state [:score :wins] inc))
+(defn add-win [state] (update state :wins inc))
 
-(defn add-loss [state] (update-in state [:score :losses] inc))
+(defn add-loss [state] (update state :losses inc))
 
 (defn stand
   "Give the turn to the other contender"
@@ -82,9 +83,9 @@
   (assoc state :turn contender))
 
 (defn new-round
-  "Start new round, but keep track of the score and the round number"
+  "Start new round, but keep track of the wins and losses and the round number"
   [state]
-  (let [preserved-data (-> (select-keys state [:score :round])
+  (let [preserved-data (-> (select-keys state [:wins :losses :round])
                            (update :round inc))]
     (merge (initial-state) preserved-data)))
 
@@ -127,8 +128,8 @@
         cnt-dealer (counter :dealer)
         cnt-player (counter :player)]
     (cond
-      (= cnt-dealer cnt-player) (-> state new-round) ;; a draw, start a new round
-      (bust? state :dealer) (-> state add-win new-round) ;; dealer's bust, add a new win to player, and start new round
+      (= cnt-dealer cnt-player) (-> state new-round)        ;; a draw, start a new round
+      (bust? state :dealer) (-> state add-win new-round)    ;; dealer's bust, add a new win to player, and start new round
       ;; cards' value of the dealer is less than 17, or he has a soft 17 then he must `hit`
       ;; make a recursive call to this same function to run the checks again
       (or (< cnt-dealer 17) (soft-17? state :dealer)) (-> state (hit :dealer) dealer-check)
@@ -139,6 +140,13 @@
 
 
 (comment
+  (-> (initial-deal (initial-state))
+      (hit :player)
+      (post-check)
+      (hit :player)
+      (post-check)
+      (hit :player)
+      (post-check)
+      (hit :player)))
 
-  (soft-17? (merge (initial-state) {:dealer [{:number \A} {:number \6}]}) :dealer))
 
