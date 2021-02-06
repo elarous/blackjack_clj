@@ -74,12 +74,36 @@
   [state]
   (update state :turn #(case % :player :dealer :dealer :player)))
 
+(defn turn
+  "Give the turn to the specific contender"
+  [state contender]
+  (assoc state :turn contender))
+
 (defn new-round
   "Start new round, but keep track of the score and the round number"
   [state]
   (let [preserved-data (-> (select-keys state [:score :round])
                            (update :round inc))]
     (merge (initial-state) preserved-data)))
+
+(defn initial-deal
+  "
+  Dealer deals 1 card to the player and 1 card to himself
+  If the player has a blackjack then he a win is added and a new round is started
+  Otherwise the turn is switched to the player
+  "
+  [state]
+  (let [new-state (-> state
+                      (deal :player)
+                      (deal :dealer)
+                      (deal :player)
+                      (deal :dealer true))]
+    (if (blackjack? new-state :player)
+      (-> new-state
+          add-win
+          new-round)
+      (-> new-state
+          (turn :player)))))
 
 (comment
   (-> (initial-state)
