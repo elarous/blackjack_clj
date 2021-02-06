@@ -74,6 +74,20 @@
   [state]
   (update state :turn #(case % :player :dealer :dealer :player)))
 
-(comment)
+(defn new-round
+  "Start new round, but keep track of the score and the round number"
+  [state]
+  (let [preserved-data (-> (select-keys state [:score :round])
+                           (update :round inc))]
+    (merge (initial-state) preserved-data)))
+
+(comment
+  (-> (initial-state)
+      add-win
+      add-loss
+      add-win
+      new-round
+      new-round))
+
 
 
