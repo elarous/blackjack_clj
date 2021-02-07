@@ -110,10 +110,10 @@
   (let [cards (get state contender)]
     (= (set (map :number cards)) #{\A 6})))
 
-(defn post-check
+(defn lose-if-bust
   "
   Check to run after the player takes an action.
-  Start a new round if player ahs gone busted
+  If gone bust add a loss to the score.
   "
   [state]
   (if (bust? state :player)
@@ -199,7 +199,7 @@
 (defn player-hit! []
   (swap! app-state #(hit % :player))
   (prn-cards!)
-  (swap! app-state post-check)
+  (swap! app-state lose-if-bust)
   (if (:has-lost? @app-state)
     (prn-status!)
     (player-action!)))

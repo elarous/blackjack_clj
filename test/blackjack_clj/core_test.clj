@@ -156,3 +156,18 @@
     (is (not (game/soft-17? state-not-soft-17 :player))
         "Returns false when player doesn't have the 2 cards Ace and 6")))
 
+(deftest lose-if-bust
+  (let [card-K {:type :hearts :number \K :face-down? false}
+        card-Q {:type :hearts :number \Q :face-down? false}
+        card-2 {:type :hearts :number 2 :face-down? false}
+        bust-cards [card-K card-Q card-2]
+        no-bust-cards [card-K card-Q]
+        bust-state (-> (merge (game/initial-state) {:player bust-cards})
+                       (game/lose-if-bust))
+        no-bust-state (-> (merge (game/initial-state) {:player no-bust-cards})
+                          (game/lose-if-bust))]
+    (is (and (:has-lost? bust-state) (= (:losses bust-state) 1))
+        "Add a loss when user's gone bust")
+    (is (and (not (:has-lost? no-bust-state)) (zero? (:losses no-bust-state)))
+        "Doesn't add a loss when the user hasn't gone bust")))
+
