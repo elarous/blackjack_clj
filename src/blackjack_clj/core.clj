@@ -213,3 +213,15 @@
     (case action
       :hit (player-hit!)
       :stand (player-stand!))))
+
+(defn dealer-action
+  "The actions the dealer take after the initial deal"
+  [state]
+  (-> (face-up-cards state :dealer)
+      (dealer-check)))
+
+(defn dealer-action! []
+  (swap! app-state dealer-action)
+  (prn-status!)
+  (prn-cards!))
+
