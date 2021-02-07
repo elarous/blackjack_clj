@@ -171,4 +171,13 @@
   (println "\n\t\t\t********YOU LOSE!********")
   (flush))
 
+(defn draw! []
+  (println "\n\t\t\t********DRAW!********")
+  (flush))
+
+(defn prn-status! []
+  (cond
+    (:has-won? @app-state) (player-win!)
+    (:has-lost? @app-state) (player-loss!)
+    (:draw? @app-state) (draw!)))
 
