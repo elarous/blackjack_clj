@@ -33,3 +33,19 @@
         (is (get card :face-down?)
             "Card should be face down")))))
 
+(deftest count-cards
+  (let [card-A {:type :hearts :number \A :face-down? false}
+        card-K {:type :spades :number \K :face-down? false}
+        card-5 {:type :hearts :number 5 :face-down? false}
+        state-no-aces (merge (initial-state)
+                             {:player [card-K card-5]})
+        state-with-aces (merge (initial-state)
+                               {:player [card-K card-5 card-A]})]
+    (testing "Counting cards"
+      (is (= (game/count-cards state-no-aces :player 1) 15)
+          "Counting a hand with King and 5 equals 15")
+      (is (= (game/count-cards state-with-aces :player 1) 16)
+          "Counting a hand with King and 5 and Ace (with 1 value) equals 16")
+      (is (= (game/count-cards state-with-aces :player 11) 26)
+          "Counting a hand with King and 5 and Ace (with 11 value) equals 26"))))
+
