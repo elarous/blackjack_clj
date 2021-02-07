@@ -181,3 +181,16 @@
     (:has-lost? @app-state) (player-loss!)
     (:draw? @app-state) (draw!)))
 
+(defn get-action!
+  "Get the action to do from the player (Hit or Stand)"
+  []
+  (let [msg "What do you want to do? Hit (h) or Stand (s): "]
+    (loop [answer ""]
+      (when-not (#{"h" "s"} answer)
+        (print msg))
+      (flush)
+      (case answer
+        "h" :hit
+        "s" :stand
+        (recur (-> (read-line) clojure.string/trim))))))
+
