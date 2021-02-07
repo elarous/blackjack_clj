@@ -37,9 +37,9 @@
   (let [card-A {:type :hearts :number \A :face-down? false}
         card-K {:type :spades :number \K :face-down? false}
         card-5 {:type :hearts :number 5 :face-down? false}
-        state-no-aces (merge (initial-state)
+        state-no-aces (merge (game/initial-state)
                              {:player [card-K card-5]})
-        state-with-aces (merge (initial-state)
+        state-with-aces (merge (game/initial-state)
                                {:player [card-K card-5 card-A]})]
     (testing "Counting cards"
       (is (= (game/count-cards state-no-aces :player 1) 15)
@@ -53,9 +53,9 @@
   (let [card-A {:type :hearts :number \A :face-down? false}
         card-K {:type :spades :number \K :face-down? false}
         card-10 {:type :hearts :number 10 :face-down? false}
-        state-blackjack-11 (merge (initial-state) {:player [card-A card-K]})
-        state-blackjack-1 (merge (initial-state) {:player [card-A card-K card-10]})
-        state-no-blackjack (merge (initial-state) {:player [card-K card-10]})]
+        state-blackjack-11 (merge (game/initial-state) {:player [card-A card-K]})
+        state-blackjack-1 (merge (game/initial-state) {:player [card-A card-K card-10]})
+        state-no-blackjack (merge (game/initial-state) {:player [card-K card-10]})]
     (testing "Contender has a blackjack"
       (is (game/blackjack? state-blackjack-11 :player)
           "Detecting blackjack when ace is equal to 11 and total is 21")
@@ -68,8 +68,8 @@
   (let [card-Q {:type :hearts :number \Q :face-down? false}
         card-K {:type :spades :number \K :face-down? false}
         card-2 {:type :hearts :number 2 :face-down? false}
-        state-bust (merge (initial-state) {:player [card-Q card-K card-2]})
-        state-no-bust (merge (initial-state) {:player [card-Q card-K]})]
+        state-bust (merge (game/initial-state) {:player [card-Q card-K card-2]})
+        state-no-bust (merge (game/initial-state) {:player [card-Q card-K]})]
     (testing "Contender has gone bust"
       (is (game/bust? state-bust :player)
           "Detecting bust when card values exceed 21")
@@ -77,12 +77,12 @@
           "Not detecting bust when card values are less than 21"))))
 
 (deftest face-up-cards
-   (let [card-2 {:type :hearts :number 2 :face-down? true}
-         card-3 {:type :hearts :number 3 :face-down? true}
-         state-before (merge (initial-state)
-                             {:dealer [card-2 card-3]})
-         state-after (game/face-up-cards state-before :dealer)]
-     (testing "Flipping cards to be face up"
-       (is (= (->> (get state-after :dealer) (map :face-down?) set)
-              #{false})
-           "All cards are flipped to face up"))))
+  (let [card-2 {:type :hearts :number 2 :face-down? true}
+        card-3 {:type :hearts :number 3 :face-down? true}
+        state-before (merge (game/initial-state)
+                            {:dealer [card-2 card-3]})
+        state-after (game/face-up-cards state-before :dealer)]
+    (testing "Flipping cards to be face up"
+      (is (= (->> (get state-after :dealer) (map :face-down?) set)
+             #{false})
+          "All cards are flipped to face up"))))
