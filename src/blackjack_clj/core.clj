@@ -234,3 +234,8 @@
     (play-round!)
     (player-action!)))
 
+(defn -main [& args]
+  (reset! app-state (initial-state))
+  (while true
+    (swap! app-state new-round)
+    (play-round!)))
