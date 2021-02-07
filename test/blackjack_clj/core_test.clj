@@ -86,3 +86,24 @@
       (is (= (->> (get state-after :dealer) (map :face-down?) set)
              #{false})
           "All cards are flipped to face up"))))
+
+(deftest add-win
+  (let [state (-> (game/initial-state)
+                  (game/add-win))]
+    (is (:has-won? state) "Player has won flag is set to true")
+    (is (= (:wins state) 1) "Player wins count is incremented")))
+
+(deftest add-loss
+  (let [state (-> (game/initial-state)
+                  (game/add-loss))]
+    (is (:has-lost? state) "Player has lost flag is set to true")
+    (is (= (:losses state) 1) "Player wins count is incremented")))
+
+(deftest set-draw
+  (let [state (-> (game/initial-state)
+                  (game/set-draw))]
+    (is (not (:has-lost? state)) "Player has lost flag wasn't set")
+    (is (not (:has-won? state)) "Player has won flag wasn't set")
+    (is (:draw? state) "Draw flag was set")))
+
+
