@@ -104,11 +104,8 @@
                       (deal :player)
                       (deal :dealer true))]
     (if (blackjack? new-state :player)
-      (-> new-state
-          add-win
-          new-round)
-      (-> new-state
-          (turn :player)))))
+      (add-win new-state)
+      new-state)))
 
 (defn soft-17? [state contender]
   (let [cards (get state contender)]
@@ -121,17 +118,18 @@
   "
   [state]
   (if (bust? state :player)
-    (-> state add-loss new-round)
+    (add-loss state)
     state))
 
 (defn dealer-check
   [state]
-  (let [counter (partial count-cards state :dealer)
-        cnt-dealer (counter :dealer)
-        cnt-player (counter :player)]
+  (let [counter (partial count-cards state)
+        cnt-dealer (counter :dealer 1)
+        cnt-player (counter :player 1)]
+    ;; TODO: check on both possible values of the ace
     (cond
-      (= cnt-dealer cnt-player) (-> state new-round)        ;; a draw, start a new round
-      (bust? state :dealer) (-> state add-win new-round)    ;; dealer's bust, add a new win to player, and start new round
+      (= cnt-dealer cnt-player) (set-draw state)            ;; a draw, start a new round
+      (bust? state :dealer) (add-win state)                 ;; dealer's bust, add a new win to player, and start new round
       ;; cards' value of the dealer is less than 17, or he has a soft 17 then he must `hit`
       ;; make a recursive call to this same function to run the checks again
       (or (< cnt-dealer 17) (soft-17? state :dealer)) (-> state (hit :dealer) dealer-check)
