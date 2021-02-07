@@ -135,18 +135,40 @@
       (or (< cnt-dealer 17) (soft-17? state :dealer)) (-> state (hit :dealer) dealer-check)
       ;; compare the dealer's and player's card values
       (>= cnt-dealer 17) (cond
-                           (> cnt-player cnt-dealer) (-> state add-win new-round)
-                           (< cnt-player cnt-dealer) (-> state add-loss new-round)))))
+                           (> cnt-player cnt-dealer) (add-win state)
+                           (< cnt-player cnt-dealer) (add-loss state)))))
+
+;; display functions
+(defn prn-heading! []
+  (let [msg (format "\n\n\t\t----------ROUND (%s) WINS (%d) LOSSES (%d)----------\n\n"
+                    (:round @app-state)
+                    (:wins @app-state)
+                    (:losses @app-state))]
+    (println msg)
+    (flush)))
+
+(defn prn-cards! []
+  (let [cards-str (fn [cards]
+                    (->> cards
+                         (map (fn [card]
+                                (if (:face-down? card)
+                                  (str "(XXXX)")
+                                  (str "(" (:type card) "_" (:number card) ")"))))
+                         (interpose " ")
+                         (reduce str)))
+        msg (format "\n\tDealer Cards: %s\n\tPlayer Cards: %s\n"
+                    (cards-str (:dealer @app-state))
+                    (cards-str (:player @app-state)))]
+    (println msg)
+    (flush)))
 
 
-(comment
-  (-> (initial-deal (initial-state))
-      (hit :player)
-      (post-check)
-      (hit :player)
-      (post-check)
-      (hit :player)
-      (post-check)
-      (hit :player)))
+(defn player-win! []
+  (println "\n\t\t\t********YOU WIN!********")
+  (flush))
+
+(defn player-loss! []
+  (println "\n\t\t\t********YOU LOSE!********")
+  (flush))
 
 
