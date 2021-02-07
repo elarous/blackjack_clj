@@ -194,3 +194,22 @@
         "s" :stand
         (recur (-> (read-line) clojure.string/trim))))))
 
+(declare player-action!)
+(declare dealer-action!)
+
+(defn player-hit! []
+  (swap! app-state #(hit % :player))
+  (prn-cards!)
+  (swap! app-state post-check)
+  (if (:has-lost? @app-state)
+    (prn-status!)
+    (player-action!)))
+
+(defn player-stand! []
+  (dealer-action!))
+
+(defn player-action! []
+  (let [action (get-action!)]
+    (case action
+      :hit (player-hit!)
+      :stand (player-stand!))))
