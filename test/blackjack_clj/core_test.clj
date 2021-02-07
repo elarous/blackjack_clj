@@ -49,3 +49,17 @@
       (is (= (game/count-cards state-with-aces :player 11) 26)
           "Counting a hand with King and 5 and Ace (with 11 value) equals 26"))))
 
+(deftest blackjack?
+  (let [card-A {:type :hearts :number \A :face-down? false}
+        card-K {:type :spades :number \K :face-down? false}
+        card-10 {:type :hearts :number 10 :face-down? false}
+        state-blackjack-11 (merge (initial-state) {:player [card-A card-K]})
+        state-blackjack-1 (merge (initial-state) {:player [card-A card-K card-10]})
+        state-no-blackjack (merge (initial-state) {:player [card-K card-10]})]
+    (testing "Contender has a blackjack"
+      (is (game/blackjack? state-blackjack-11 :player)
+          "Detecting blackjack when ace is equal to 11 and total is 21")
+      (is (game/blackjack? state-blackjack-1 :player)
+          "Detecting blackjack when ace is equal to 1 and total is 21")
+      (is (not (game/blackjack? state-no-blackjack :player))
+          "Not detecting blackjack when total is not 21 "))))
