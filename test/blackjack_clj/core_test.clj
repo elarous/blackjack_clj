@@ -121,3 +121,25 @@
     (is (= (:round state-after) (inc (:round state-before)))
         "Increments the round counter by 1")))
 
+(deftest initial-deal
+  (let [state (game/initial-deal (game/initial-state))
+        card-Q {:type :hearts :number \Q :face-down? false}
+        card-K {:type :spades :number \K :face-down? false}
+        card-2 {:type :hearts :number 2 :face-down? false}
+        card-3 {:type :hearts :number 3 :face-down? false}
+        card-A {:type :hearts :number \A :face-down? false}
+        ;; A state with cards arranged so that the player wins (blackjack) on the initial deal
+        state-win (-> (merge (game/initial-state) {:cards [card-2 card-Q card-K card-A]})
+                      (game/initial-deal))
+        state-no-win (-> (merge (game/initial-state) {:cards [card-2 card-Q card-K card-3]})
+                         (game/initial-deal))]
+    (def state-win state-win)
+    (is (= 2 (-> state :player count) (-> state :dealer count))
+        "Deals 2 cards for each contender")
+    (is (-> state :dealer last :face-down?)
+        "The second card dealt to dealer is face down")
+    (is (and (:has-won? state-win) (= (:wins state-win) 1))
+        "Player wins when he get a blackjack")
+    (is (and (not (:has-won? state-no-win)) (zero? (:wins state-no-win)))
+        "Player doesn't win when he doesn't get a blackjack")))
+
