@@ -1,4 +1,5 @@
-(ns blackjack-clj.core)
+(ns blackjack-clj.core
+  (:require [clojure.string :as s]))
 
 (def app-state (atom nil))
 
@@ -166,7 +167,7 @@
                          (map (fn [card]
                                 (if (:face-down? card)
                                   (str "(XXXX)")
-                                  (str "(" (:type card) "_" (:number card) ")"))))
+                                  (str "(" (:number card) " of " (-> (:type card) name s/capitalize) ")"))))
                          (interpose " ")
                          (reduce str)))
         msg (format "\n\tDealer Cards: %s\n\tPlayer Cards: %s\n"
@@ -205,7 +206,7 @@
       (case answer
         "h" :hit
         "s" :stand
-        (recur (-> (read-line) clojure.string/trim))))))
+        (recur (-> (read-line) s/trim))))))
 
 (declare player-action!)
 (declare dealer-action!)
