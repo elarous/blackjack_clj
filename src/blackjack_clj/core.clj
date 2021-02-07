@@ -18,9 +18,8 @@
    :has-lost? false
    :draw?     false
    :cards     (-> (for [type [:hearts :clubs :diamonds :spades]
-                        number [\A 2 3 4 5 6 7 8 9 \J \Q \K]
-                        face-down? [false]]
-                    (hash-map :type type :number number :face-down? face-down?))
+                        number [\A 2 3 4 5 6 7 8 9 10 \J \Q \K]]
+                    (hash-map :type type :number number :face-down? false))
                   shuffle
                   queue)
    :round     0
