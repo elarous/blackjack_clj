@@ -108,7 +108,7 @@
 
 (defn soft-17? [state contender]
   (let [cards (get state contender)]
-    (= (set (map :number cards)) #{\A \6})))
+    (= (set (map :number cards)) #{\A 6})))
 
 (defn post-check
   "

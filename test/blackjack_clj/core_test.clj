@@ -143,3 +143,16 @@
     (is (and (not (:has-won? state-no-win)) (zero? (:wins state-no-win)))
         "Player doesn't win when he doesn't get a blackjack")))
 
+(deftest soft-17?
+  (let [card-2 {:type :hearts :number 2 :face-down? false}
+        card-6 {:type :hearts :number 6 :face-down? false}
+        card-A {:type :hearts :number \A :face-down? false}
+        state-soft-17 (merge (game/initial-state)
+                             {:player [card-6 card-A]})
+        state-not-soft-17 (merge (game/initial-state)
+                                 {:player [card-2 card-A]})]
+    (is (game/soft-17? state-soft-17 :player)
+        "Returns true when player has 2 cards the Ace and the 6")
+    (is (not (game/soft-17? state-not-soft-17 :player))
+        "Returns false when player doesn't have the 2 cards Ace and 6")))
+
