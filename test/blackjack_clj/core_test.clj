@@ -75,3 +75,14 @@
           "Detecting bust when card values exceed 21")
       (is (not (game/bust? state-no-bust :player))
           "Not detecting bust when card values are less than 21"))))
+
+(deftest face-up-cards
+   (let [card-2 {:type :hearts :number 2 :face-down? true}
+         card-3 {:type :hearts :number 3 :face-down? true}
+         state-before (merge (initial-state)
+                             {:dealer [card-2 card-3]})
+         state-after (game/face-up-cards state-before :dealer)]
+     (testing "Flipping cards to be face up"
+       (is (= (->> (get state-after :dealer) (map :face-down?) set)
+              #{false})
+           "All cards are flipped to face up"))))
