@@ -106,4 +106,18 @@
     (is (not (:has-won? state)) "Player has won flag wasn't set")
     (is (:draw? state) "Draw flag was set")))
 
+(deftest new-round
+  (let [state-before (-> (game/initial-state)
+                         (game/add-win)
+                         (game/add-loss)
+                         (game/deal :player)
+                         (game/deal :dealer))
+        state-after (game/new-round state-before)]
+    (is (= (select-keys state-before [:wins :losses])
+           (select-keys state-after [:wins :losses]))
+        "Preserves data that is not related to a particular round")
+    (is (not= (select-keys state-before [:cards :player :dealer :has-won? :has-lost? :draw?])
+              (select-keys state-after [:cards :player :dealer :has-won? :has-lost? :draw?])))
+    (is (= (:round state-after) (inc (:round state-before)))
+        "Increments the round counter by 1")))
 
