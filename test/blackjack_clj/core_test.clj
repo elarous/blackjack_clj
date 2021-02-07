@@ -171,3 +171,60 @@
     (is (and (not (:has-lost? no-bust-state)) (zero? (:losses no-bust-state)))
         "Doesn't add a loss when the user hasn't gone bust")))
 
+(deftest dealer-check
+  (let [card-A {:type :hearts :number \A :face-down? false}
+        card-K {:type :hearts :number \K :face-down? false}
+        card-4 {:type :hearts :number 4 :face-down? false}
+        card-6 {:type :hearts :number 6 :face-down? false}
+        card-8 {:type :hearts :number 8 :face-down? false}
+        card-2 {:type :hearts :number 2 :face-down? false}]
+    (testing "When there is a draw"
+      (let [dealer-cards [card-K card-2]
+            player-cards [card-4 card-8]
+            dealer-cards-ace [card-4 card-A]
+            player-cards-ace [card-A card-2 card-2]
+            state-no-ace (-> (merge (game/initial-state)
+                                    {:player player-cards :dealer dealer-cards})
+                             (game/dealer-check))
+            state-with-ace (-> (merge (game/initial-state)
+                                      {:player player-cards-ace
+                                       :dealer dealer-cards-ace})
+                               (game/dealer-check))]
+        (is (:draw? state-no-ace)
+            "Sets the draw flag when card values are equal for contenders")
+        (is (:draw? state-with-ace)
+            "Sets the draw flag when card values are equal and contain aces")))
+    (testing "When dealer needs to hit again"
+      (let [dealer-cards-less-17 [card-2 card-4]
+            dealer-cards-soft-17 [card-A card-6]
+            player-cards [card-4]
+            initial-state (game/initial-state)
+            state-less-17 (-> (merge initial-state
+                                     {:dealer dealer-cards-less-17
+                                      :player player-cards})
+                              (game/dealer-check))
+            state-soft-17 (-> (merge initial-state
+                                     {:dealer dealer-cards-soft-17
+                                      :player player-cards})
+                              (game/dealer-check))]
+        (is (> (-> state-less-17 :dealer count) (-> initial-state :dealer count))
+            "Dealer hits (one or many times) so he has more cards in hand")
+        (is (> (-> state-soft-17 :dealer count) (-> initial-state :dealer count))
+            "Dealer hits (one or many times) so he has more cards in hand")))
+    (testing "When dealer or player wins / loses"
+      (let [big-hand [card-A card-K card-8]                 ;; 19 not 29
+            small-hand [card-K card-4]                      ;; 14
+            state-player-win (-> (merge (game/initial-state)
+                                        {:player big-hand
+                                         :dealer small-hand})
+                                 (game/dealer-check))
+            state-player-lose (-> (merge (game/initial-state)
+                                         {:player small-hand
+                                          :dealer big-hand})
+                                  (game/dealer-check))]
+        (def state-player-lose state-player-lose)
+        (is (and (:has-won? state-player-win) (= (:wins state-player-win) 1))
+            "The player wins when he has a larger card values")
+        (is (and (:has-lost? state-player-lose) (= (:losses state-player-lose) 1))
+            "The player loses when he has a smaller card values")))))
+

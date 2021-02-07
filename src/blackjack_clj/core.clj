@@ -43,14 +43,17 @@
 (defn count-cards
   "Count the cards' values in the hand of a contender
    `ace-as` should be either `11` or `1`"
-  [state contender ace-as]
-  (let [cards (get state contender)]
-    (->> cards
-         (map #(case (:number %)
-                 (\J \Q \K) 10
-                 \A (if (= ace-as 11) 11 1)
-                 (:number %)))
-         (reduce +))))
+  ([state contender]
+   [(count-cards state contender 1)
+    (count-cards state contender 11)])
+  ([state contender ace-as]
+   (let [cards (get state contender)]
+     (->> cards
+          (map #(case (:number %)
+                  (\J \Q \K) 10
+                  \A (if (= ace-as 11) 11 1)
+                  (:number %)))
+          (reduce +)))))
 
 (defn blackjack?
   "Check if the contender has a blackjack, try for both Ace values: 1 & 11"
@@ -120,22 +123,33 @@
     (add-loss state)
     state))
 
+(defn comp-max
+  "Compare the maximum values for vectors `values1` and `values2` using fn `comp-fn`"
+  [comp-fn values1 values2]
+  (let [v1 (if (seq values1) (apply max values1) 0)
+        v2 (if (seq values2) (apply max values2) 0)]
+    (comp-fn v1 v2)))
+
 (defn dealer-check
   [state]
   (let [counter (partial count-cards state)
-        cnt-dealer (counter :dealer 1)
-        cnt-player (counter :player 1)]
-    ;; TODO: check on both possible values of the ace
+        dealer-counts (->> (counter :dealer) (filter (partial >= 21)) vec)
+        player-counts (->> (counter :player) (filter (partial >= 21)) vec)]
     (cond
-      (= cnt-dealer cnt-player) (set-draw state)            ;; a draw, start a new round
-      (bust? state :dealer) (add-win state)                 ;; dealer's bust, add a new win to player, and start new round
+      ;; check all possible combinations for cards values that might contains aces
+      (comp-max = dealer-counts player-counts)
+      (set-draw state)                                      ;; a draw, start a new round
+      (bust? state :dealer)
+      (add-win state)                 ;; dealer's bust, add a new win to player, and start new round
       ;; cards' value of the dealer is less than 17, or he has a soft 17 then he must `hit`
       ;; make a recursive call to this same function to run the checks again
-      (or (< cnt-dealer 17) (soft-17? state :dealer)) (-> state (hit :dealer) dealer-check)
+      (or (some (partial > 17) dealer-counts) (soft-17? state :dealer))
+      (-> state (hit :dealer) dealer-check)
       ;; compare the dealer's and player's card values
-      (>= cnt-dealer 17) (cond
-                           (> cnt-player cnt-dealer) (add-win state)
-                           (< cnt-player cnt-dealer) (add-loss state)))))
+      (some (partial <= 17) dealer-counts)
+      (cond
+        (comp-max > player-counts dealer-counts) (add-win state)
+        (comp-max < player-counts dealer-counts) (add-loss state)))))
 
 ;; display functions
 (defn prn-heading! []
