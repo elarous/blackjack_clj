@@ -72,19 +72,17 @@
   [state contender]
   (update state contender #(mapv (fn [card] (assoc card :face-down? false)) %)))
 
-(defn add-win [state] (update state :wins inc))
+(defn add-win [state]
+  (-> state
+      (update :wins inc)
+      (assoc :has-won? true)))
 
-(defn add-loss [state] (update state :losses inc))
+(defn add-loss [state]
+  (-> state
+      (update :losses inc)
+      (assoc :has-lost? true)))
 
-(defn stand
-  "Give the turn to the other contender"
-  [state]
-  (update state :turn #(case % :player :dealer :dealer :player)))
-
-(defn turn
-  "Give the turn to the specific contender"
-  [state contender]
-  (assoc state :turn contender))
+(defn set-draw [state] (assoc state :draw? true))
 
 (defn new-round
   "Start new round, but keep track of the wins and losses and the round number"
