@@ -1,4 +1,4 @@
-(ns blackjack-clj.core_test
+(ns blackjack-clj.core-test
   (:require [blackjack-clj.core :as game]
             [clojure.test :refer :all]
             [clojure.set :refer [intersection]]))
@@ -175,6 +175,7 @@
   (let [card-A {:type :hearts :number \A :face-down? false}
         card-K {:type :hearts :number \K :face-down? false}
         card-4 {:type :hearts :number 4 :face-down? false}
+        card-3 {:type :hearts :number 3 :face-down? false}
         card-6 {:type :hearts :number 6 :face-down? false}
         card-8 {:type :hearts :number 8 :face-down? false}
         card-2 {:type :hearts :number 2 :face-down? false}]
@@ -213,16 +214,16 @@
             "Dealer hits (one or many times) so he has more cards in hand")))
     (testing "When dealer or player wins / loses"
       (let [big-hand [card-A card-K card-8]                 ;; 19 not 29
-            small-hand [card-K card-4]                      ;; 14
-            state-player-win (-> (merge (game/initial-state)
+            small-hand [card-K card-4 card-3]                      ;; 14
+            initial-state (game/initial-state)
+            state-player-win (-> (merge initial-state
                                         {:player big-hand
                                          :dealer small-hand})
                                  (game/dealer-check))
-            state-player-lose (-> (merge (game/initial-state)
+            state-player-lose (-> (merge initial-state
                                          {:player small-hand
                                           :dealer big-hand})
                                   (game/dealer-check))]
-        (def state-player-lose state-player-lose)
         (is (and (:has-won? state-player-win) (= (:wins state-player-win) 1))
             "The player wins when he has a larger card values")
         (is (and (:has-lost? state-player-lose) (= (:losses state-player-lose) 1))

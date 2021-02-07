@@ -140,7 +140,7 @@
       (comp-max = dealer-counts player-counts)
       (set-draw state)                                      ;; a draw, start a new round
       (bust? state :dealer)
-      (add-win state)                 ;; dealer's bust, add a new win to player, and start new round
+      (add-win state)                                       ;; dealer's bust, add a new win to player, and start new round
       ;; cards' value of the dealer is less than 17, or he has a soft 17 then he must `hit`
       ;; make a recursive call to this same function to run the checks again
       (or (some (partial > 17) dealer-counts) (soft-17? state :dealer))
