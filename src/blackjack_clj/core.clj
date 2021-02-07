@@ -1,5 +1,7 @@
 (ns blackjack-clj.core)
 
+(def app-state (atom nil))
+
 ;; Small helper to create queues
 (defn queue
   ([] (clojure.lang.PersistentQueue/EMPTY))
