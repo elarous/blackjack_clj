@@ -12,18 +12,20 @@
 (defn initial-state
   "Get a fresh initial state"
   []
-  {:wins   0
-   :losses 0
-   :cards  (-> (for [type [:hearts :clubs :diamonds :spades]
-                     number [\A 2 3 4 5 6 7 8 9 \J \Q \K]
-                     face-down? [false]]
-                 (hash-map :type type :number number :face-down? face-down?))
-               shuffle
-               queue)
-   :round  1
-   :turn   :dealer
-   :player []
-   :dealer []})
+  {:wins      0
+   :losses    0
+   :has-won?  false
+   :has-lost? false
+   :draw?     false
+   :cards     (-> (for [type [:hearts :clubs :diamonds :spades]
+                        number [\A 2 3 4 5 6 7 8 9 \J \Q \K]
+                        face-down? [false]]
+                    (hash-map :type type :number number :face-down? face-down?))
+                  shuffle
+                  queue)
+   :round     0
+   :player    []
+   :dealer    []})
 
 (defn deal
   "Deal a card to a contender, optionally the card can be dealt face-down"
