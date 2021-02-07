@@ -225,3 +225,12 @@
   (prn-status!)
   (prn-cards!))
 
+(defn play-round! []
+  (prn-heading!)
+  (swap! app-state initial-deal)
+  (prn-cards!)
+  (prn-status!)
+  (if (:has-won? @app-state)
+    (play-round!)
+    (player-action!)))
+
