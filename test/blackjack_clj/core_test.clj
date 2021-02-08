@@ -42,12 +42,10 @@
         state-with-aces (merge (game/initial-state)
                                {:player [card-K card-5 card-A]})]
     (testing "Counting cards"
-      (is (= (game/count-cards state-no-aces :player 1) 15)
+      (is (= (game/count-cards state-no-aces :player) 15)
           "Counting a hand with King and 5 equals 15")
-      (is (= (game/count-cards state-with-aces :player 1) 16)
-          "Counting a hand with King and 5 and Ace (with 1 value) equals 16")
-      (is (= (game/count-cards state-with-aces :player 11) 26)
-          "Counting a hand with King and 5 and Ace (with 11 value) equals 26"))))
+      (is (= (game/count-cards state-with-aces :player) 16)
+          "Counting a hand with King and 5 and Ace equals 16"))))
 
 (deftest blackjack?
   (let [card-A {:type :hearts :number \A :face-down? false}
@@ -177,13 +175,14 @@
         card-4 {:type :hearts :number 4 :face-down? false}
         card-3 {:type :hearts :number 3 :face-down? false}
         card-6 {:type :hearts :number 6 :face-down? false}
+        card-7 {:type :hearts :number 7 :face-down? false}
         card-8 {:type :hearts :number 8 :face-down? false}
         card-2 {:type :hearts :number 2 :face-down? false}]
     (testing "When there is a draw"
-      (let [dealer-cards [card-K card-2]
-            player-cards [card-4 card-8]
-            dealer-cards-ace [card-4 card-A]
-            player-cards-ace [card-A card-2 card-2]
+      (let [dealer-cards [card-K card-2 card-6]
+            player-cards [card-4 card-8 card-6]
+            dealer-cards-ace [card-4 card-A card-K card-3]
+            player-cards-ace [card-A card-2 card-2 card-K card-3]
             state-no-ace (-> (merge (game/initial-state)
                                     {:player player-cards :dealer dealer-cards})
                              (game/dealer-check))
@@ -229,7 +228,7 @@
 
     (testing "When dealer or player wins / loses"
       (let [big-hand [card-A card-K card-8]                 ;; 19 not 29
-            small-hand [card-K card-4 card-3]                      ;; 14
+            small-hand [card-K card-4 card-3]               ;; 14
             initial-state (game/initial-state)
             state-player-win (-> (merge initial-state
                                         {:player big-hand
