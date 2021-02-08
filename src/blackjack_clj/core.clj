@@ -52,7 +52,7 @@
                  (cond
                    ;; if a normal number, then add it to all possible results
                    (number? num) (map (partial + num) acc)
-                   ;; if it's the Aces vector, then do the some for both possible values 1 & 11
+                   ;; if it's the Aces vector, then do the sum for both possible values 1 & 11
                    (vector? num) (concat (map (partial + (first num)) acc)
                                          (map (partial + (second num)) acc)))) [0])
        (remove (partial < 21)) ;; filter out all possible values that would cause a bust
@@ -60,7 +60,7 @@
 
 (defn count-cards
   "Count the cards' values in the hand of a contender
-   The Aces will be counted as 1 or 11, being greedy but not bust "
+   The Aces will be counted as 1 or 11, being greedy but not bust"
   [state contender]
   (count-cards-helper (get state contender)))
 
@@ -70,7 +70,7 @@
   (= (count-cards state contender) 21))
 
 (defn bust?
-  "Check if the contender went bust (Cards' values exceed 21)"
+  "Check if the contender went bust (cards' values exceed 21)"
   [state contender]
   (zero? (count-cards state contender)))
 
@@ -92,7 +92,7 @@
 (defn set-draw [state] (assoc state :draw? true))
 
 (defn new-round
-  "Start new round, but keep track of the wins and losses and the round number"
+  "Start new round, but keep track of the wins, losses and the round number"
   [state]
   (let [preserved-data (-> (select-keys state [:wins :losses :round])
                            (update :round inc))]
@@ -101,7 +101,7 @@
 (defn initial-deal
   "
   Dealer deals 1 card to the player and 1 card to himself
-  If the player has a blackjack then he a win is added and a new round is started
+  If the player has a blackjack then a win is added and a new round is started
   Otherwise the turn is switched to the player
   "
   [state]
@@ -128,30 +128,24 @@
     (add-loss state)
     state))
 
-(defn comp-max
-  "Compare the maximum values for vectors `values1` and `values2` using fn `comp-fn`"
-  [comp-fn values1 values2]
-  (let [v1 (if (seq values1) (apply max values1) 0)
-        v2 (if (seq values2) (apply max values2) 0)]
-    (comp-fn v1 v2)))
-
 (defn dealer-check
   [state]
   (let [counter (partial count-cards state)
         dealer-counts (counter :dealer)
         player-counts (counter :player)]
+    ;; Check all possible combinations for card values that might contain aces
     (cond
-      ;; check all possible combinations for cards values that might contains aces
+      ;; It's a draw when dealer and player have the same count of card values but only if the dealer got more than 17
       (and (= dealer-counts player-counts) (< 17 dealer-counts))
-      (set-draw state)                                      ;; a draw, start a new round
+      (set-draw state)                                      ;; Set the draw flag
       (bust? state :dealer)
-      (add-win state)                                       ;; dealer's bust, add a new win to player, and start new round
-      ;; cards' value of the dealer is less than 17, or he has a soft 17 then he must `hit`
-      ;; make a recursive call to this same function to run the checks again
+      (add-win state)                                       ;; Dealer's bust, add a new win to player
+      ;; If cards' value of the dealer is less than 17, or he has a soft 17 then he must `hit`.
+      ;; A recursive call to this same function is made after the `hit` to run the checks again
       (or (> 17 dealer-counts) (soft-17? state :dealer))
       (-> state (hit :dealer) dealer-check)
-      ;; compare the dealer's and player's card values
-      ;; the dealer stands if the values of his card exceeds or equals  17
+      ;; Compare the dealer's and player's card values
+      ;; The dealer stands if the values of his card exceeds or equals  17
       (<= 17 dealer-counts)
       (cond
         (> player-counts dealer-counts) (add-win state)
