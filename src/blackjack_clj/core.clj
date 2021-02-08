@@ -151,7 +151,7 @@
         (> player-counts dealer-counts) (add-win state)
         (< player-counts dealer-counts) (add-loss state))
       :else
-      (assert true "The dealer must take an action"))))
+      (assert false "The dealer must take an action"))))
 
 ;; display functions
 (defn prn-heading! []
