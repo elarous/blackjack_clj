@@ -131,7 +131,6 @@
                       (game/initial-deal))
         state-no-win (-> (merge (game/initial-state) {:cards [card-2 card-Q card-K card-3]})
                          (game/initial-deal))]
-    (def state-win state-win)
     (is (= 2 (-> state :player count) (-> state :dealer count))
         "Deals 2 cards for each contender")
     (is (-> state :dealer last :face-down?)
@@ -219,7 +218,6 @@
               state (merge (game/initial-state)
                            {:player player-cards :dealer dealer-cards :cards cards})
               new-state (game/dealer-check state)]
-          (def new-state new-state)
           (is (> (count (:dealer new-state))
                  (count (:dealer state)))
               "When dealer gets 2 aces he needs to hit (if value is less than 17)")
