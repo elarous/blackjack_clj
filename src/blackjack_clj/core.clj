@@ -244,8 +244,7 @@
   (swap! app-state initial-deal)
   (prn-cards!)
   (prn-status!)
-  (if (:has-won? @app-state)
-    (play-round!)
+  (when-not (:has-won? @app-state)
     (player-action!)))
 
 (defn -main [& args]
