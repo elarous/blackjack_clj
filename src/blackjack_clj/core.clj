@@ -41,34 +41,38 @@
 
 (def hit deal)                                              ;; alias
 
+(defn count-cards-helper
+  [cards]
+  (->> cards
+       (map #(case (:number %) ;; map each card to it's value, the ace is mapped to the tuple [1 11]
+               (\J \Q \K) 10
+               \A [1 11]
+               (:number %)))
+       (reduce (fn [acc num]
+                 (cond
+                   ;; if a normal number, then add it to all possible results
+                   (number? num) (map (partial + num) acc)
+                   ;; if it's the Aces vector, then do the some for both possible values 1 & 11
+                   (vector? num) (concat (map (partial + (first num)) acc)
+                                         (map (partial + (second num)) acc)))) [0])
+       (remove (partial < 21)) ;; filter out all possible values that would cause a bust
+       (apply max 0))) ;; finally, get the max of sums, if it's bust then 0 is returned
+
 (defn count-cards
   "Count the cards' values in the hand of a contender
-   `ace-as` should be either `11` or `1`"
-  ([state contender]
-   [(count-cards state contender 1)
-    (count-cards state contender 11)])
-  ([state contender ace-as]
-   (let [cards (get state contender)]
-     (->> cards
-          (map #(case (:number %)
-                  (\J \Q \K) 10
-                  \A (if (= ace-as 11) 11 1)
-                  (:number %)))
-          (reduce +)))))
+   The Aces will be counted as 1 or 11, being greedy but not bust "
+  [state contender]
+  (count-cards-helper (get state contender)))
 
 (defn blackjack?
   "Check if the contender has a blackjack, try for both Ace values: 1 & 11"
   [state contender]
-  (let [counter (partial count-cards state contender)]
-    (or (= 21 (counter 11))
-        (= 21 (counter 1)))))
+  (= (count-cards state contender) 21))
 
 (defn bust?
   "Check if the contender went bust (Cards' values exceed 21)"
   [state contender]
-  (let [counter (partial count-cards state contender)]
-    (and (> (counter 11) 21)
-         (> (counter 1) 21))))
+  (zero? (count-cards state contender)))
 
 (defn face-up-cards
   "Flip all contender's cards to be face-up"
@@ -134,23 +138,26 @@
 (defn dealer-check
   [state]
   (let [counter (partial count-cards state)
-        dealer-counts (->> (counter :dealer) (filter (partial >= 21)) vec)
-        player-counts (->> (counter :player) (filter (partial >= 21)) vec)]
+        dealer-counts (counter :dealer)
+        player-counts (counter :player)]
     (cond
       ;; check all possible combinations for cards values that might contains aces
-      (comp-max = dealer-counts player-counts)
+      (and (= dealer-counts player-counts) (< 17 dealer-counts))
       (set-draw state)                                      ;; a draw, start a new round
       (bust? state :dealer)
       (add-win state)                                       ;; dealer's bust, add a new win to player, and start new round
       ;; cards' value of the dealer is less than 17, or he has a soft 17 then he must `hit`
       ;; make a recursive call to this same function to run the checks again
-      (or (some (partial > 17) dealer-counts) (soft-17? state :dealer))
+      (or (> 17 dealer-counts) (soft-17? state :dealer))
       (-> state (hit :dealer) dealer-check)
       ;; compare the dealer's and player's card values
-      (some (partial <= 17) dealer-counts)
+      ;; the dealer stands if the values of his card exceeds or equals  17
+      (<= 17 dealer-counts)
       (cond
-        (comp-max > player-counts dealer-counts) (add-win state)
-        (comp-max < player-counts dealer-counts) (add-loss state)))))
+        (> player-counts dealer-counts) (add-win state)
+        (< player-counts dealer-counts) (add-loss state))
+      :else
+      (assert true "The dealer must take an action"))))
 
 ;; display functions
 (defn prn-heading! []
