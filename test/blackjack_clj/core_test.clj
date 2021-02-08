@@ -196,22 +196,37 @@
         (is (:draw? state-with-ace)
             "Sets the draw flag when card values are equal and contain aces")))
     (testing "When dealer needs to hit again"
-      (let [dealer-cards-less-17 [card-2 card-4]
-            dealer-cards-soft-17 [card-A card-6]
-            player-cards [card-4]
-            initial-state (game/initial-state)
-            state-less-17 (-> (merge initial-state
-                                     {:dealer dealer-cards-less-17
-                                      :player player-cards})
-                              (game/dealer-check))
-            state-soft-17 (-> (merge initial-state
-                                     {:dealer dealer-cards-soft-17
-                                      :player player-cards})
-                              (game/dealer-check))]
-        (is (> (-> state-less-17 :dealer count) (-> initial-state :dealer count))
-            "Dealer hits (one or many times) so he has more cards in hand")
-        (is (> (-> state-soft-17 :dealer count) (-> initial-state :dealer count))
-            "Dealer hits (one or many times) so he has more cards in hand")))
+      (testing "When dealer got one or zero Aces"
+        (let [dealer-cards-less-17 [card-2 card-4]
+              dealer-cards-soft-17 [card-A card-6]
+              player-cards [card-4]
+              initial-state (game/initial-state)
+              state-less-17 (-> (merge initial-state
+                                       {:dealer dealer-cards-less-17
+                                        :player player-cards})
+                                (game/dealer-check))
+              state-soft-17 (-> (merge initial-state
+                                       {:dealer dealer-cards-soft-17
+                                        :player player-cards})
+                                (game/dealer-check))]
+          (is (> (-> state-less-17 :dealer count) (-> initial-state :dealer count))
+              "Dealer hits (one or many times) so he has more cards in hand")
+          (is (> (-> state-soft-17 :dealer count) (-> initial-state :dealer count))
+              "Dealer hits (one or many times) so he has more cards in hand")))
+      (testing "When dealer got more than one Aces"
+        (let [dealer-cards [card-A card-3]
+              player-cards [card-K card-2]
+              cards [card-6 card-7 card-A]
+              state (merge (game/initial-state)
+                           {:player player-cards :dealer dealer-cards :cards cards})
+              new-state (game/dealer-check state)]
+          (def new-state new-state)
+          (is (> (count (:dealer new-state))
+                 (count (:dealer state)))
+              "When dealer gets 2 aces he needs to hit (if value is less than 17)")
+          (is (= (and (:has-lost? new-state) (= (:losses new-state) 1)))
+              "The player loses"))))
+
     (testing "When dealer or player wins / loses"
       (let [big-hand [card-A card-K card-8]                 ;; 19 not 29
             small-hand [card-K card-4 card-3]                      ;; 14
